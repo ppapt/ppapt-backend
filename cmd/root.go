@@ -11,8 +11,20 @@ import (
 	"github.com/spf13/viper"
 )
 
+// The internal variable cfgFile holds the config file name
 var cfgFile string
+
+// LogLevel defines the verbosity of the logging. The following levels are defined:
+//  0 = Panic: Only log panic messages (e.g. the universe is blowing up)
+//  1 = Fatal: The application can't continue after this error
+//  2 = Error: This is an error, but we can continue
+//  3 = Warn:  This is a warning, something went wrong, but we can ignore it
+//  4 = Info:  Just for you to know that it happens
+//  5 = Debug: Lots of internal status messages, allows tracing the application
 var LogLevel int
+
+// LogFile is the name of the file to log into. By default, the application logs
+// to stdout
 var LogFile string
 
 // RootCmd represents the base command when called without any subcommands
@@ -55,6 +67,7 @@ var RootCmd = &cobra.Command{
 	},
 }
 
+// Start the application => do nothing at the moment, you need to specify "server"
 func Execute() {
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -62,6 +75,7 @@ func Execute() {
 	}
 }
 
+// Initialize the global variable handling
 func init() {
 	cobra.OnInitialize(initConfig)
 
