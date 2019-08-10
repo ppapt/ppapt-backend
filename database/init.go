@@ -31,7 +31,7 @@ type Database struct {
 func NewDatabase(DBType string, DSN string) (*Database, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
-		"func":    "NewDatabase"}).Logger
+		"func":    "NewDatabase"})
 	conn := new(Database)
 	db, err := sql.Open(DBType, DSN)
 	if err != nil {
@@ -44,7 +44,6 @@ func NewDatabase(DBType string, DSN string) (*Database, error) {
 
 	ctx, stop := context.WithCancel(context.Background())
 	defer stop()
-	conn.ctx = ctx
 	appSignal := make(chan os.Signal, 3)
 	signal.Notify(appSignal, os.Interrupt)
 
@@ -56,7 +55,7 @@ func NewDatabase(DBType string, DSN string) (*Database, error) {
 	}()
 
 	if err = db.PingContext(ctx); err != nil {
-		log.WithField("action", "ping").Fatal(err)
+		logger.WithField("action", "ping").Fatal(err)
 		return nil, err
 	}
 	return conn, nil
@@ -76,7 +75,7 @@ func BuildDSN(DBType string, User string, Password string, DBName string, Server
 	case "mysql":
 		return User + ":" + Password + "@mysql(" + Server + ":" + strconv.Itoa(Port) + ")/" + DBName, nil
 	case "postgres":
-		return "postgres://" + User + ":" + Password + "@" + Server + ":" + strconv.Itoa(Port) + "/" + DBType, nil
+		return "postgres://" + User + ":" + Password + "@" + Server + ":" + strconv.Itoa(Port) + "/" + DBName + "?sslmode=disable", nil
 	case "sqlite3":
 		//#ToDo: Add sqlite3 dsn handling
 		return "", nil
@@ -91,7 +90,7 @@ func BuildDSN(DBType string, User string, Password string, DBName string, Server
 func (db Database) GetNativeSQL(StatementName string) (string, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
-		"func":    "GetNativeSQL"}).Logger
+		"func":    "GetNativeSQL"})
 	if q, ok := Queries[StatementName][db.DBType]; ok {
 		return q, nil
 	} else {
@@ -110,15 +109,15 @@ func (db Database) GetNativeSQL(StatementName string) (string, error) {
 func (db Database) Query(StatementName string, Args ...interface{}) (*sql.Rows, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
-		"func":    "Query"}).Logger
+		"func":    "Query"})
 	SQL, err := db.GetNativeSQL(StatementName)
 	if err != nil {
 		return nil, err
 	}
 	logger.WithField("query", SQL).Debug("Execute query")
-	rows, err := db.db.QueryContext(db.ctx, SQL, Args)
+	rows, err := db.db.Query(SQL, Args...)
 	if err != nil {
-		log.WithField("action", "querycontext").Error(err)
+		logger.WithField("action", "querycontext").Error(err)
 		return nil, err
 	}
 	return rows, nil
@@ -130,13 +129,13 @@ func (db Database) Query(StatementName string, Args ...interface{}) (*sql.Rows, 
 func (db Database) QueryRow(StatementName string, Args ...interface{}) (*sql.Row, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
-		"func":    "QueryRow"}).Logger
+		"func":    "QueryRow"})
 	SQL, err := db.GetNativeSQL(StatementName)
 	if err != nil {
 		return nil, err
 	}
 	logger.WithField("query", SQL).Debug("Execute query")
-	row := db.db.QueryRowContext(db.ctx, SQL, Args)
+	row := db.db.QueryRow(SQL, Args...)
 	return row, nil
 }
 
@@ -145,15 +144,15 @@ func (db Database) QueryRow(StatementName string, Args ...interface{}) (*sql.Row
 func (db Database) Exec(StatementName string, Args ...interface{}) (sql.Result, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
-		"func":    "Exec"}).Logger
+		"func":    "Exec"})
 	SQL, err := db.GetNativeSQL(StatementName)
 	if err != nil {
 		return nil, err
 	}
 	logger.WithField("query", SQL).Debug("Execute query")
-	result, err := db.db.ExecContext(db.ctx, SQL, Args)
+	result, err := db.db.Exec(SQL, Args...)
 	if err != nil {
-		log.WithField("action", "execcontext").Error(err)
+		logger.WithField("action", "execcontext").Error(err)
 		return result, err
 	}
 	return result, nil

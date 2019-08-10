@@ -8,13 +8,13 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"io/ioutil"
 	"net/http"
-	"github.com/ppapt/ppapt-backend/data"
+	"github.com/ppapt/ppapt-backend/ppapt"
 )
 
 // ApiLogin handles a User login and returns a token to the caller. If the
 // user can't be retrieved or the password doesn't match, A 401 is returned.
 func ApiLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	var in data.LoginData
+	var in ppapt.LoginData
 
 	RequestLogger(r, "api/login")
 	response, err := ioutil.ReadAll(r.Body)
@@ -27,18 +27,14 @@ func ApiLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, err := DB.GetUser(in.EMail)
+	user, t, err := p.Login(in.EMail,in.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if !user.PasswordIsValid(in.Password) {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	t := Session.AddSession(in.EMail)
-	tr := data.TokenResponse{
+	tr := ppapt.TokenResponse{
 		Token: t,
+		User: user,
 	}
 	sendJSON(w, tr, http.StatusOK)
 }

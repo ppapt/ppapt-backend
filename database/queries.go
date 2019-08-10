@@ -14,18 +14,18 @@ type QueryVariants map[string]QueryVariant
 // dialect supported by the different database types.
 var Queries = QueryVariants{
 	"user_add": {
-		"postgres": "INSERT INTO users SET email=$1, user_name=$2, user_password=$3, user_locked=$4",
-		"mysql":    "INSERT INTO users SET email=?, user_name=?, user_password=?, user_locked=?",
-		"sqlite3":  "INSERT INTO users SET email=?, user_name=?, user_password=?, user_locked=?",
+		"postgres": "INSERT INTO users (email, user_name, user_password, user_locked) VALUES ($1, $2, $3, $4);",
+		"mysql":    "INSERT INTO users (email, user_name, user_password, user_locked) VALUES (?, ?, ?, ?);",
+		"sqlite3":  "INSERT INTO users SET email=?, user_name=?, user_password=?, user_locked=?;",
 	},
 	"user_get": {
-		"postgres": "SELECT * from users where email=$1",
-		"mysql":    "SELECT * from users where email=?",
-		"sqlite3":  "SELECT * from users where email=?",
+		"postgres": "SELECT * from users where email=$1;",
+		"mysql":    "SELECT * from users where email=?;",
+		"sqlite3":  "SELECT * from users where email=?;",
 	},
 	"user_update": {
-		"postgres": "UPDATE users SET email=$2, user_name=$3, user_password=$4, user_locked=$5 where email=$1",
-		"mysql":    "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?",
+		"postgres": "UPDATE users SET email=$1, user_name=$2, user_password=$3, user_locked=$4 where email=$5;",
+		"mysql":    "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?;",
 		"sqlite3":  "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?",
 	},
 }

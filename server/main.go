@@ -1,14 +1,13 @@
 // server is the REST API and webserver component of the ppapt-backend
 //
-// This file, server.go, contains the main router and functions used throughout
+// This file, main.go, contains the main router and functions used throughout
 // the package.
 package server
 
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
-	"github.com/ppapt/ppapt-backend/data"
-	"github.com/ppapt/ppapt-backend/database"
+	"github.com/ppapt/ppapt-backend/ppapt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"net/http"
@@ -16,56 +15,39 @@ import (
 	"strconv"
 )
 
-// DB stores the database connection established when starting a router
-var DB *database.Database
-
-// Session keeps all logged in users.
-//#ToDo: This is currently not thread-safe, make this a separate object
-var Session data.Session
+// The main ppapt object handles all application logic
+var p *ppapt.Ppapt
 
 // Router opens a web server and routes calls to the static web server or the
 // various API functions
-func Router() {
+func Router(Ppapt *ppapt.Ppapt) {
+	logger := log.WithFields(log.Fields{
+		"context": "server",
+		"func":    "Router",
+	})
+	p = Ppapt
 	router := httprouter.New()
 	router.GET("/", Index)
 	router.GET("/api/login", ApiLogin)
 	//	router.PUT("/api/*path", ApiPUT)
 	//	router.POST("/api/*path", ApiPOST)
 	//	router.DELETE("/api/*path", ApiDELETE)
-	log.Debug("Router initialized")
+	logger.Debug("Router initialized")
 	router.ServeFiles("/static/*filepath", http.Dir("static/"))
 
 	CertificateFile := viper.GetString("certificate-file")
 	KeyFile := viper.GetString("key-file")
 	Port := viper.GetInt("port")
 
-	DBType := viper.GetString("database-type")
-	DSN, err := database.BuildDSN(
-		DBType,
-		viper.GetString("database-user"),
-		viper.GetString("database-password"),
-		viper.GetString("database-name"),
-		viper.GetString("database-server"),
-		viper.GetInt("database-port"))
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(10)
-	}
-	DB, err = database.NewDatabase(DBType, DSN)
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(10)
-	}
-
 	if _, err := os.Stat(CertificateFile); err == nil {
 		if _, err := os.Stat(KeyFile); os.IsNotExist(err) {
-			log.Error("Found " + CertificateFile + " but missing " + KeyFile)
+			logger.Fatal("Found " + CertificateFile + " but missing " + KeyFile)
 			os.Exit(10)
 		}
-		log.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(Port), CertificateFile, KeyFile, router))
+		logger.Fatal(http.ListenAndServeTLS(":"+strconv.Itoa(Port), CertificateFile, KeyFile, router))
 
 	} else {
-		log.Fatal(CertificateFile + " not found")
+		logger.Fatal(CertificateFile + " not found")
 		os.Exit(10)
 	}
 }

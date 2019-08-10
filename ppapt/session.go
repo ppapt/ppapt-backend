@@ -2,7 +2,7 @@
 //
 // This file session.go contains the data structures to handle sessions for
 //logged in users.
-package data
+package ppapt
 
 import (
 	"math/rand"
@@ -23,6 +23,7 @@ type Session map[string]UserSession
 //a token or logging in.
 type TokenResponse struct {
 	Token string `json:"token"`
+	User  *User  `json:"user"`
 }
 
 // session_length defines, how long a token is valid

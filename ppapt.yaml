@@ -1,0 +1,12 @@
+---
+# This is an example file for connecting to a local database with default values
+port: 8443
+certificate-file:  'server.crt'
+key-file:          'server.key'
+key-password:      ''
+database-typoe:    'postgres'
+database-name:     'ppapt'
+database-server:   'localhost'
+database-port:     5432
+database-user:     'ppapt'
+database-password: 'ppapt'

@@ -5,47 +5,55 @@
 package database
 
 import (
-	"github.com/ppapt/ppapt-backend/data"
 	log "github.com/sirupsen/logrus"
 )
 
 // GetUser fetches user data from the database. It returns an user data
 // structure or an error
 // EMail is the EMail address (primary key) of the user to retrieve
-func (db Database) GetUser(EMail string) (*data.User, error) {
+func (db Database) GetUser(EMail string) (string, string, string, bool, error) {
+	var REMail string
+	var Name string
+	var Password string
+	var Locked bool
 	logger := log.WithFields(log.Fields{
 		"context": "database",
 		"func":    "GetUser"}).Logger
 	logger.WithField("EMail", EMail).Debug("Fetch data")
-	u := new(data.User)
 	row,err := db.QueryRow("user_get", EMail)
 	if err != nil {
 		logger.WithField("action", "db.QueryRow").Error(err)
-		return nil, err
+		return "", "", "", false, err
 	}
-	err = row.Scan(&u.EMail, &u.Name, &u.Password, &u.Locked)
+	err = row.Scan(REMail, Name, Password, Locked)
 	if err != nil {
 		logger.WithField("action", "row.Scan").Error(err)
-		return nil, err
+		return "", "", "", false, err
 	}
-	return u, nil
+	return REMail, Name, Password, Locked, nil
 }
 
 // UpdateUser updates the user with the given EMail address using the provided
 // user data. It returns an error or nil in case of success.
 // EMail is the current email address
-// User is a data.User struct containing the updated data
-func (db Database) UpdateUser(EMail string, User *data.User) error {
+// NewEMail is the new EMail address for the user, leaving empty means no change
+// Name is the users name
+// Password is the hashed password
+// Locked is true if the user is not allowed to log in
+func (db Database) UpdateUser(EMail string, NewEmail string, Name string, Password string, Locked bool) error {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
 		"func":    "UpdateUser"}).Logger
 	logger.WithFields(log.Fields{
-		"EMail":  User.EMail,
-		"Name":   User.Name,
-		"Locked": User.Locked,
+		"EMail":  EMail,
+		"NewEmail": NewEmail,
+		"Name":   Name,
+		"Locked": Locked,
 	}).Debug("Execute Query")
-
-	_, err := db.Exec("user_update", EMail, User.EMail, User.Name, User.Password, User.Locked)
+	if NewEmail=="" {
+		NewEmail=EMail
+	}
+	_, err := db.Exec("user_update", EMail, Name, Password, Locked, NewEmail)
 	if err != nil {
 		logger.WithField("action", "db.Exec").Error(err)
 		return err
@@ -56,17 +64,17 @@ func (db Database) UpdateUser(EMail string, User *data.User) error {
 // AddUser adds a new user to the database. It returns nil on success or an error
 // User is a data.User struct containing the EMail address, name, password and
 // locked status of the new user
-func (db Database) AddUser(User *data.User) error {
+func (db Database) AddUser(EMail string, Name string, Password string, Locked bool) error {
 	logger := log.WithFields(log.Fields{
 		"context": "database",
 		"func":    "AddUser"}).Logger
 	logger.WithFields(log.Fields{
-		"EMail":  User.EMail,
-		"Name":   User.Name,
-		"Locked": User.Locked,
+		"EMail":  EMail,
+		"Name":   Name,
+		"Locked": Locked,
 	}).Debug("Execute Query")
 
-	_, err := db.Exec("user_add", User.EMail, User.Name, User.Password, User.Locked)
+	_, err := db.Exec("user_add", EMail, Name, Password, Locked)
 	if err != nil {
 		logger.WithField("action", "db.Exec").Error(err)
 		return err

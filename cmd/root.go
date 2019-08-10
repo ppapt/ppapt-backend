@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/ppapt/ppapt-backend/ppapt"
 )
 
 // The internal variable cfgFile holds the config file name
@@ -26,6 +27,10 @@ var LogLevel int
 // LogFile is the name of the file to log into. By default, the application logs
 // to stdout
 var LogFile string
+
+// Ppapt is the main ppapt object
+var Ppapt *ppapt.Ppapt
+
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -64,6 +69,14 @@ var RootCmd = &cobra.Command{
 			"LogFile":  LogFile,
 			"LogLevel": LogLevel,
 		}).Debug("Logging configured")
+
+		var err error
+		Ppapt,err=ppapt.NewPpapt()
+		if err != nil {
+			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(10)
+		}
 	},
 }
 
@@ -79,12 +92,12 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "c", "configuration file (default is $HOME/ppapt.yaml)")
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "ppapt.yaml","configuration file (default is ppapt.yaml)")
 	RootCmd.PersistentFlags().IntVarP(&LogLevel, "loglevel", "l", 5, "log level (defaults to 4 (Info))")
 	RootCmd.PersistentFlags().StringVarP(&LogFile, "logfile", "L", "", "logfile (defaults to stdout)")
 
-	viper.BindPFlag("loglevel", serverCmd.Flags().Lookup("loglevel"))
-	viper.BindPFlag("logfile", serverCmd.Flags().Lookup("logfile"))
+	viper.BindPFlag("loglevel", RootCmd.PersistentFlags().Lookup("loglevel"))
+	viper.BindPFlag("logfile", RootCmd.PersistentFlags().Lookup("logfile"))
 
 	viper.SetDefault("loglevel", 5)
 	viper.SetDefault("logfile", "")
