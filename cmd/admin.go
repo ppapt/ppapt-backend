@@ -21,7 +21,7 @@ func init() {
 	AdminCmd.PersistentFlags().IntVarP(&DatabasePort, "database-port", "o", 5432, "HostnamePort on which the database server listens (default 5432)")
 	AdminCmd.PersistentFlags().StringVarP(&DatabaseUser, "database-user", "u", "ppapt", "Username for the database connection (default ppapt)")
 	AdminCmd.PersistentFlags().StringVarP(&DatabasePassword, "database-password", "w", "", "Password for the database connection")
-	
+
 	viper.BindPFlag("database-type", AdminCmd.PersistentFlags().Lookup("database-type"))
 	viper.BindPFlag("database-name", AdminCmd.PersistentFlags().Lookup("database-name"))
 	viper.BindPFlag("database-server", AdminCmd.PersistentFlags().Lookup("database-server"))

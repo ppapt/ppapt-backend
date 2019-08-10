@@ -7,10 +7,11 @@
 package ppapt
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"errors"
-	"regexp"
+	"github.com/ppapt/ppapt-backend/common"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
+	"regexp"
 )
 
 // User is the golang user object matching the user table in the database
@@ -42,32 +43,32 @@ func (u User) PasswordIsValid(Password string) bool {
 // HashPassword uses bcrypt to hash the given password. On success, the hash is
 // returned, otherwise an error is returned.
 // Cleartext is the cleartext password
-func (p *Ppapt)HashPassword(Cleartext string)(string, error) {
-	c:=[]byte(Cleartext)
-	h,err:=bcrypt.GenerateFromPassword(c,10)
+func (p *Ppapt) HashPassword(Cleartext string) (string, error) {
+	c := []byte(Cleartext)
+	h, err := bcrypt.GenerateFromPassword(c, 10)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 	return string(h), nil
 }
 
 // GetUser retrieves an user object from the database
-// EMail 
-func (p *Ppapt)GetUser(EMail string) (*User,error) {
+// EMail
+func (p *Ppapt) GetUser(EMail string) (*User, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "ppapt",
 		"func":    "FetUser"})
 	logger.WithField("EMail", EMail).Debug("Get user data")
-	e,n,pass,l,err:= p.db.GetUser(EMail)
+	e, n, pass, l, err := p.db.GetUser(EMail)
 	if err != nil {
 		log.Warn(err)
 		return nil, err
 	}
-	u:=&User{
-		EMail: e,
-		Name: n,
+	u := &User{
+		EMail:    e,
+		Name:     n,
 		Password: pass,
-		Locked: l,
+		Locked:   l,
 	}
 	return u, nil
 }
@@ -76,14 +77,14 @@ func (p *Ppapt)GetUser(EMail string) (*User,error) {
 // token. It returns a pointer to the user object and the token or an error.
 // EMail is the users email address
 // Password the password to be validated.
-func (p *Ppapt)Login(EMail string, Password string)(*User, string, error) {
+func (p *Ppapt) Login(EMail string, Password string) (*User, string, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "ppapt",
 		"func":    "Login",
-		"EMail": EMail,
+		"EMail":   EMail,
 	})
 	logger.Debug("Get user data")
-	u, err:=p.GetUser(EMail)
+	u, err := p.GetUser(EMail)
 	if err != nil {
 		logger.Warn("Could not retrieve user data")
 		return nil, "", err
@@ -93,43 +94,53 @@ func (p *Ppapt)Login(EMail string, Password string)(*User, string, error) {
 		return nil, "", err
 	}
 	t := p.session.AddSession(EMail)
-	return u,t, nil
+	return u, t, nil
 }
 
-func (p *Ppapt)NewUser(EMail string, Name string, CleartextPassword string, Locked bool)(*User, error) {
+func (p *Ppapt) NewUser(EMail string, Name string, CleartextPassword string, Locked bool) (*User, error) {
 	logger := log.WithFields(log.Fields{
 		"context": "ppapt",
 		"func":    "NewUser",
-		"EMail": EMail,
-		"Name": Name,
-		"Locked": Locked,
+		"EMail":   EMail,
+		"Name":    Name,
+		"Locked":  Locked,
 	})
 	logger.Debug("New user")
 	re := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
-	if ! re.MatchString(EMail) {
-		e:="EMail does not match validation regex"
+	if !re.MatchString(EMail) {
+		e := "EMail does not match validation regex"
 		logger.Error(e)
 		return nil, errors.New(e)
 	}
-	if Name=="" {
-		e:="Name must not be empty"
+	if Name == "" {
+		e := "Name must not be empty"
 		logger.Error(e)
 		return nil, errors.New(e)
 	}
-	pass,err:=p.HashPassword(CleartextPassword)
+	pass, err := p.HashPassword(CleartextPassword)
 	if err != nil {
 		logger.Error(err)
-		return nil,err
+		return nil, err
 	}
-	err=p.db.AddUser(EMail,Name,pass,Locked)
+	err = p.db.AddUser(EMail, Name, pass, Locked)
 	if err != nil {
 		return nil, err
 	}
-	u:=&User{
-		EMail: EMail,
-		Name: Name,
+	u := &User{
+		EMail:    EMail,
+		Name:     Name,
 		Password: pass,
-		Locked: Locked,
+		Locked:   Locked,
 	}
-	return u,nil
+	return u, nil
+}
+
+func (p *Ppapt) ListUsers() (common.UserList, error) {
+	logger := log.WithFields(log.Fields{
+		"context": "ppapt",
+		"func":    "ListUsers",
+	})
+	logger.Debug("List users")
+	u, err := p.db.ListUsers()
+	return u, err
 }

@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/ppapt/ppapt-backend/server"
+	"fmt"
 	"github.com/ppapt/ppapt-backend/ppapt"
+	"github.com/ppapt/ppapt-backend/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"fmt"
 	"os"
 )
 
@@ -15,7 +15,7 @@ var ServerCmd = &cobra.Command{
 	Short: "Pen And Paper Tools backend server",
 	Long:  `The ppapt backend component`,
 	Run: func(cmd *cobra.Command, args []string) {
-		p,err:=ppapt.NewPpapt()
+		p, err := ppapt.NewPpapt()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(10)

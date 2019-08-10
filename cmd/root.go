@@ -6,10 +6,10 @@ import (
 	"os"
 
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/ppapt/ppapt-backend/ppapt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/ppapt/ppapt-backend/ppapt"
 )
 
 // The internal variable cfgFile holds the config file name
@@ -30,7 +30,6 @@ var LogFile string
 
 // Ppapt is the main ppapt object
 var Ppapt *ppapt.Ppapt
-
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
@@ -71,7 +70,7 @@ var RootCmd = &cobra.Command{
 		}).Debug("Logging configured")
 
 		var err error
-		Ppapt,err=ppapt.NewPpapt()
+		Ppapt, err = ppapt.NewPpapt()
 		if err != nil {
 			log.Fatal(err)
 			fmt.Println(err)
@@ -92,7 +91,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "ppapt.yaml","configuration file (default is ppapt.yaml)")
+	RootCmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "ppapt.yaml", "configuration file (default is ppapt.yaml)")
 	RootCmd.PersistentFlags().IntVarP(&LogLevel, "loglevel", "l", 5, "log level (defaults to 4 (Info))")
 	RootCmd.PersistentFlags().StringVarP(&LogFile, "logfile", "L", "", "logfile (defaults to stdout)")
 

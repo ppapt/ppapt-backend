@@ -6,9 +6,9 @@ package server
 import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
+	"github.com/ppapt/ppapt-backend/ppapt"
 	"io/ioutil"
 	"net/http"
-	"github.com/ppapt/ppapt-backend/ppapt"
 )
 
 // ApiLogin handles a User login and returns a token to the caller. If the
@@ -27,14 +27,14 @@ func ApiLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	user, t, err := p.Login(in.EMail,in.Password)
+	user, t, err := p.Login(in.EMail, in.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	tr := ppapt.TokenResponse{
 		Token: t,
-		User: user,
+		User:  user,
 	}
 	sendJSON(w, tr, http.StatusOK)
 }

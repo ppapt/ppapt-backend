@@ -26,6 +26,11 @@ var Queries = QueryVariants{
 	"user_update": {
 		"postgres": "UPDATE users SET email=$1, user_name=$2, user_password=$3, user_locked=$4 where email=$5;",
 		"mysql":    "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?;",
-		"sqlite3":  "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?",
+		"sqlite3":  "UPDATE users SET email=?, user_name=?, user_password=?, user_locked=? where email=?;",
+	},
+	"users_list": {
+		"postgres": "SELECT email, user_name, user_locked FROM users ORDER BY email;",
+		"mysql":    "SELECT email, user_name, user_locked FROM users ORDER BY email;",
+		"sqlite3":  "SELECT email, user_name, user_locked FROM users ORDER BY email;",
 	},
 }

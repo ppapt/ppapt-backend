@@ -6,21 +6,21 @@
 package ppapt
 
 import (
-    	"github.com/spf13/viper"
-    	log "github.com/sirupsen/logrus"
-    	"github.com/ppapt/ppapt-backend/database"
+	"github.com/ppapt/ppapt-backend/database"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // This is the main ppapt object bringing together al components
 type Ppapt struct {
-    db *database.Database
-    session Session
+	db      *database.Database
+	session Session
 }
 
-func NewPpapt()(*Ppapt, error) {
-    ppapt:=new(Ppapt)
-    
-    DBType := viper.GetString("database-type")
+func NewPpapt() (*Ppapt, error) {
+	ppapt := new(Ppapt)
+
+	DBType := viper.GetString("database-type")
 	DSN, err := database.BuildDSN(
 		DBType,
 		viper.GetString("database-user"),
@@ -32,10 +32,10 @@ func NewPpapt()(*Ppapt, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	DB, err:= database.NewDatabase(DBType, DSN)
+	DB, err := database.NewDatabase(DBType, DSN)
 	if err != nil {
 		return nil, err
 	}
-    ppapt.db=DB
-    return ppapt, nil
+	ppapt.db = DB
+	return ppapt, nil
 }
