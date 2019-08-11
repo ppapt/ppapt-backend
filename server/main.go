@@ -28,7 +28,8 @@ func Router(Ppapt *ppapt.Ppapt) {
 	p = Ppapt
 	router := httprouter.New()
 	router.GET("/", Index)
-	router.GET("/api/login", ApiLogin)
+	router.POST("/api/login", ApiLogin)
+	router.POST("/api/logout", ApiLogout)
 	//	router.PUT("/api/*path", ApiPUT)
 	//	router.POST("/api/*path", ApiPOST)
 	//	router.DELETE("/api/*path", ApiDELETE)

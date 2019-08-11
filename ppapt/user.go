@@ -22,13 +22,6 @@ type User struct {
 	Locked   bool   `json:"locked" liquibase:"user_locked   boolean not null" liquibase_table:"user"`
 }
 
-// LoginData is the data sent by a web caller to login or change his password
-type LoginData struct {
-	EMail       string `json:"email"`
-	Password    string `json:"password"`
-	NewPassword string `json:"new_password"`
-}
-
 // PasswordIsValid uses bcrypt to validate the given Password against the users
 // hashed password.
 // Password is the cleartext password. It is compared against the hashed

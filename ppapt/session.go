@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"time"
 	"unsafe"
+	"errors"
 )
 
 // UserSession contains the token and its expire time.
@@ -16,8 +17,6 @@ type UserSession struct {
 	Expire time.Time
 }
 
-// Session stores UserSession data per user (EMail)
-type Session map[string]UserSession
 
 // TokenResponse is the data structure returned to the frontend, when requesting
 //a token or logging in.
@@ -25,6 +24,9 @@ type TokenResponse struct {
 	Token string `json:"token"`
 	User  *User  `json:"user"`
 }
+
+// Session stores UserSession data per user (EMail)
+type Session map[string]UserSession
 
 // session_length defines, how long a token is valid
 const session_length = 3600
@@ -67,7 +69,7 @@ func newToken() string {
 	return *(*string)(unsafe.Pointer(&b))
 }
 
-// Add (or replace) a session to a sessions map.
+// AddSession adds or replaces a session in the sessions map.
 // EMail is the users EMail address (primary key)
 func (s Session) AddSession(EMail string) string {
 	t := newToken()
@@ -78,4 +80,24 @@ func (s Session) AddSession(EMail string) string {
 	}
 	s[EMail] = u
 	return t
+}
+
+// GetSession retrieves a session for the given user and token. If the session
+// does not exist, an error is returned.
+// EMail is the users email
+// Token is the session token to look for
+func (p Ppapt)GetSession(EMail string, Token string)(*UserSession, error) {
+	for e,s:= range p.session {
+		if e == EMail && s.Token == Token {
+			return &s,nil
+		}
+	}
+	return nil, errors.New("Session not found")
+}
+
+
+// DeleteSession deletes a session from thje session map
+// EMail is the users email address
+func (p Ppapt)DeleteSession(EMail string) {
+	delete(p.session, "EMail")
 }

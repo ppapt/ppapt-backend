@@ -1,0 +1,119 @@
+openapi: 3.0.0
+servers: 
+  - url: 'https://apptest.ott-consult.de:8443'
+    description: 'developer sandbox'
+info:
+  description: API for the Pathfinder Pen And Paper Tool (ppapt)
+  version: "0.0.1"
+  title: Pathfinder Pen And Paper Tool
+  contact:
+    email: white@ott-service.de
+  license:
+    name: GPL 3.0
+    url: 'https://www.gnu.org/licenses/gpl-3.0.en.html'
+tags:
+  - name: global
+    description: Global functions
+  - name: user
+    description: User related operations
+paths:
+  /api/login:
+    post:
+      tags:
+        - global
+      summary: User login and token generation
+      operationId: login
+      description: |
+        Providing the EMail address and corrsponding password, the user can
+        obtain a session token
+      parameters:
+        - in: query
+          name: email
+          description: EMail address of the user
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: password
+          description: Cleartext password for the user
+          required: true
+          schema:
+            type: string
+            format: password
+            minLength: 8
+      responses:
+        '200':
+          description: Token response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/user'
+        '400':
+          description: 'bad input parameter'
+        '401':
+          description: 'wrong password or user does not exist'
+  /api/logout:
+    post:
+      tags:
+        - global
+      summary: User logout
+      operationId: logout
+      description: |
+        Logout the user with this token and destroy the session
+      parameters:
+        - in: cookie
+          name: token
+          description: Session token
+          required: true
+          schema:
+            type: string
+        - in: cookie
+          name: email
+          description: User email
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Logout user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/success'
+
+        
+components:
+  schemas:
+    success:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    user:
+      type: object
+      required:
+        - email
+        - name
+        - password
+        - locked
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@ppapt.org
+        name:
+          type: string
+          example: Lisa Mustermann
+        password:
+          type: string
+          format: password
+          example: 'Th15 i5 a s3cure passw0rd!'
+        locked:
+          type: boolean
